@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style><title>鹈鹕环岛骑行</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&family=ZCOOL+QingKe+HuangYou&display=swap">
+<style>
+  /* 布局：全屏 3D 舞台，上方左右两块玻璃面板（介绍 / 仪表），底部一条控制台；单一黄昏玻璃风格 */
+  :root {
+    --stage: #1a1426;
+    --ink: #fff6ec;
+    --muted: rgba(255, 238, 222, 0.7);
+    --glass: rgba(22, 17, 32, 0.56);
+    --line: rgba(255, 228, 206, 0.16);
+    --accent: #ffb36b;
+    --accent-ink: #2a1708;
+    --teal: #62d3c9;
+    --f-display: "ZCOOL QingKe HuangYou", "Noto Sans SC", system-ui, sans-serif;
+    --f-latin: "Bricolage Grotesque", "Noto Sans SC", system-ui, sans-serif;
+    --f-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body { background: var(--stage); color: var(--ink); font-family: var(--f-body); overflow: hidden; }
+  #stage { position: fixed; inset: 0; }
+  #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+  .ui {
+    position: fixed; inset: 0; pointer-events: none;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto 1fr auto;
+    gap: 12px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-bottom, 0px));
+  }
+  .panel {
+    pointer-events: auto; background: var(--glass); border: 1px solid var(--line); border-radius: 14px;
+    backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  }
+
+  .intro { grid-column: 1; grid-row: 1; max-width: 360px; padding: 16px 18px; display: grid; gap: 6px; align-self: start; }
+  .eyebrow { font-family: var(--f-latin); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); }
+  .eyebrow i { font-style: italic; text-transform: none; letter-spacing: 0.02em; }
+  h1 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: clamp(30px, 5vw, 44px); line-height: 1.05; text-wrap: balance; color: var(--ink); }
+  h1 span { color: var(--accent); }
+  .intro p { margin: 0; font-size: 13px; line-height: 1.7; color: var(--muted); }
+
+  .hud { grid-column: 2; grid-row: 1; align-self: start; padding: 12px 6px; display: grid; grid-template-columns: repeat(2, auto); }
+  .stat { padding: 6px 14px; display: grid; gap: 2px; min-width: 92px; }
+  .stat dt { font-size: 11px; letter-spacing: 0.06em; color: var(--muted); }
+  .stat dd { margin: 0; font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 600; color: var(--ink); }
+  .stat dd small { font-size: 11px; font-weight: 400; color: var(--muted); margin-left: 3px; }
+  .stat.hot dd { color: var(--accent); }
+
+  .deck { grid-column: 1 / -1; grid-row: 3; justify-self: center; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; max-width: 100%; }
+  .group { display: grid; gap: 6px; min-width: 0; }
+  .label { font-size: 11px; letter-spacing: 0.08em; color: var(--muted); }
+  .seg { display: flex; flex-wrap: wrap; gap: 4px; }
+  button {
+    font: 500 13px/1 var(--f-body); color: var(--ink); background: rgba(255, 240, 225, 0.07);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 11px; cursor: pointer;
+    transition: background 0.15s, color 0.15s, transform 0.1s;
+  }
+  button:hover { background: rgba(255, 240, 225, 0.15); }
+  button:active { transform: translateY(1px); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  button.act { background: rgba(98, 211, 201, 0.14); border-color: rgba(98, 211, 201, 0.35); }
+  button.act:hover { background: rgba(98, 211, 201, 0.26); }
+  kbd { font-family: var(--f-mono); font-size: 10px; color: var(--muted); margin-left: 6px; padding: 1px 4px; border: 1px solid var(--line); border-radius: 4px; }
+  .speed { display: flex; gap: 10px; align-items: center; }
+  input[type="range"] { width: 140px; accent-color: var(--accent); }
+  output { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink); min-width: 62px; }
+  .hint { grid-column: 1 / -1; grid-row: 2; align-self: end; justify-self: center; font-size: 12px; color: var(--muted); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); text-align: center; }
+
+  #toast {
+    position: fixed; left: 50%; top: 38%; transform: translate(-50%, 8px) scale(0.96); pointer-events: none;
+    font-family: var(--f-display); font-size: 34px; color: var(--accent); text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+    opacity: 0; transition: opacity 0.25s, transform 0.25s;
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+  .cover { position: fixed; inset: 0; display: grid; place-items: center; background: var(--stage); color: var(--muted); font-size: 14px; text-align: center; padding-inline: 24px; }
+  .cover strong { display: block; font-family: var(--f-display); font-weight: 400; font-size: 30px; color: var(--ink); margin-bottom: 8px; }
+  .wheel { width: 44px; height: 44px; margin: 0 auto 14px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 720px) {
+    .ui { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    .intro { padding: 12px 14px; max-width: none; }
+    .intro p { display: none; }
+    .hud { grid-column: 1; grid-row: 2; align-self: start; justify-self: start; grid-template-columns: repeat(3, auto); padding: 6px 2px; }
+    .stat { min-width: 0; padding: 4px 10px; }
+    .stat dd { font-size: 16px; }
+    .hint { display: none; }
+    .deck { gap: 10px 12px; padding: 10px 12px; justify-self: stretch; }
+    button { padding: 7px 9px; font-size: 12px; }
+    kbd { display: none; }
+    input[type="range"] { width: 110px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wheel { animation-duration: 3s; }
+    #toast, button { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage" aria-label="三维场景：一只鹈鹕骑自行车绕灯塔小岛骑行"></div>
+
+<div class="ui">
+  <section class="panel intro">
+    <div class="eyebrow"><i>Pelecanus occidentalis</i> · 褐鹈鹕</div>
+    <h1>鹈鹕<span>环岛</span>骑行</h1>
+    <p>它骑着一辆 44×20 齿比的青绿色单车，绕着灯塔岛的 14 米环道兜圈。抛条鱼给它，它会张开喉囊接住；褐鹈鹕的喉囊最多能兜住约 11 升水。</p>
+  </section>
+
+  <dl class="panel hud" aria-live="off">
+    <div class="stat"><dt>车速</dt><dd><span id="hSpeed">18</span><small>km/h</small></dd></div>
+    <div class="stat"><dt>踏频</dt><dd><span id="hCad">0</span><small>rpm</small></dd></div>
+    <div class="stat"><dt>过弯倾角</dt><dd><span id="hLean">0</span><small>°</small></dd></div>
+    <div class="stat"><dt>里程</dt><dd><span id="hDist">0.00</span><small>km</small></dd></div>
+    <div class="stat"><dt>圈数</dt><dd><span id="hLap">0</span><small>圈</small></dd></div>
+    <div class="stat hot"><dt>接到的鱼</dt><dd><span id="hFish">0</span><small>条</small></dd></div>
+  </dl>
+
+  <div class="hint">拖拽或滚轮进入自由视角 · 数字键 1–5 切换机位 · T 切换时段</div>
+
+  <div class="panel deck">
+    <div class="group">
+      <span class="label">时段</span>
+      <div class="seg">
+        <button type="button" id="tDay" data-time="day" aria-pressed="false">白天</button>
+        <button type="button" id="tDusk" data-time="dusk" aria-pressed="true">黄昏</button>
+        <button type="button" id="tNight" data-time="night" aria-pressed="false">夜晚</button>
+      </div>
+    </div>
+    <div class="group">
+      <span class="label">机位</span>
+      <div class="seg">
+        <button type="button" id="cChase" data-cam="chase" aria-pressed="true">跟随</button>
+        <button type="button" id="cFront" data-cam="front" aria-pressed="false">正面</button>
+        <button type="button" id="cSide" data-cam="side" aria-pressed="false">侧面</button>
+        <button type="button" id="cCine" data-cam="cine" aria-pressed="false">环绕</button>
+        <button type="button" id="cOrbit" data-cam="orbit" aria-pressed="false">自由</button>
+      </div>
+    </div>
+    <div class="group">
+      <span class="label">互动</span>
+      <div class="seg">
+        <button type="button" class="act" id="fish">抛鱼<kbd>Space</kbd></button>
+        <button type="button" class="act" id="bell">按铃<kbd>B</kbd></button>
+        <button type="button" class="act" id="wave">挥手<kbd>H</kbd></button>
+      </div>
+    </div>
+    <div class="group">
+      <label class="label" for="speed">车速</label>
+      <div class="speed">
+        <input type="range" id="speed" min="0" max="32" step="1" value="18">
+        <output id="speedOut" for="speed">18 km/h</output>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<div class="cover" id="loading">
+  <div><div class="wheel"></div><strong>正在给轮胎打气</strong>加载三维场景…</div>
+</div>
+<div class="cover" id="fail" hidden>
+  <div><strong>场景没能启动</strong>这台设备或浏览器没有开启 WebGL，或三维库加载失败。换用新版 Chrome、Edge、Safari 或 Firefox 再打开试试。</div>
+</div>
+
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+</script>
+<script>
+  // 模块加载失败时（例如 CDN 不可达）给出说明，而不是一直转圈
+  setTimeout(function () {
+    var l = document.getElementById('loading');
+    if (!l.hidden) { l.hidden = true; document.getElementById('fail').hidden = false; }
+  }, 20000);
+</script>
+<script type="module" src="main.js"></script>
+
+</body>
+</html>
